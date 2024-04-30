@@ -10,6 +10,11 @@ public abstract class Observable {
         this.observers = new HashSet<>();
     }
 
+    public synchronized void removeObserver(Observer observer) {
+        if (observer == null) throw new NullPointerException();
+        observers.remove(observer);
+    }
+
     public synchronized void addObserver(Observer observer) {
         if (observer == null) throw new NullPointerException();
         observers.add(observer);
