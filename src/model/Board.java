@@ -67,7 +67,7 @@ public class Board {
     }
 
     public Tile getTileAt(Coordinates coordinates) {
-        return tiles[coordinates.getX()][coordinates.getY()];
+        return tiles[coordinates.getColumn()][coordinates.getRow()];
     }
 
     /**
@@ -77,12 +77,12 @@ public class Board {
      * @return the number of adjacent bombs.
      */
     private int countAdjacentBombs(Coordinates coordinate) {
-        if (tiles[coordinate.getX()][coordinate.getY()].hasBomb()) return -1;
+        if (tiles[coordinate.getColumn()][coordinate.getRow()].hasBomb()) return -1;
 
         int count = 0;
-        for (int i = coordinate.getX() - 1; i <= coordinate.getX() + 1; i++) {
+        for (int i = coordinate.getColumn() - 1; i <= coordinate.getColumn() + 1; i++) {
             if (i < 0 || i >= rows) continue;
-            for (int j = coordinate.getY() - 1; j <= coordinate.getY() + 1; j++) {
+            for (int j = coordinate.getRow() - 1; j <= coordinate.getRow() + 1; j++) {
                 if (j < 0 || j >= columns) continue;
                 if (tiles[i][j].hasBomb()) count++;
             }

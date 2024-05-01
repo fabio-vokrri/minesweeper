@@ -6,13 +6,14 @@ import common.Coordinates;
  * Model class of a Tile.
  */
 public class Tile {
-    
+
     private final int x;
     private final int y;
 
     private int adjacentBombs;
     private boolean hasBomb;
     private boolean isOpen;
+    private boolean isFlagged;
 
     /**
      * Creates a new tile with the given x and y coordinates.
@@ -31,8 +32,8 @@ public class Tile {
      * @param coordinates the tile's coordinates
      */
     public Tile(Coordinates coordinates) {
-        this.x = coordinates.getX();
-        this.y = coordinates.getY();
+        this.x = coordinates.getColumn();
+        this.y = coordinates.getRow();
     }
 
     /**
@@ -101,5 +102,23 @@ public class Tile {
      */
     public boolean isOpen() {
         return this.isOpen;
+    }
+
+    /**
+     * Gets whether this tile is flagged.
+     *
+     * @return true if this tile is flagged.
+     */
+    public boolean isFlagged() {
+        return isFlagged;
+    }
+
+    /**
+     * Toggles this tile to be flagged or not.
+     * If this tile is already opened, the state of the tile does not change.
+     */
+    public void toggleFlag() {
+        if (this.isOpen) return;
+        isFlagged = !isFlagged;
     }
 }

@@ -2,28 +2,27 @@ package model;
 
 import common.Coordinates;
 import common.Observable;
+import common.message.GameViewMessage;
 
 public class Game extends Observable {
-    private final Board board;
-    private final int remainingBombs;
+    private Board board;
+
+    private int remainingBombs;
     private int remainingTiles;
+
     private boolean won;
     private boolean lost;
-    private Coordinates currentPointerCoordinates;
+    private Coordinates pointerCoordinates;
 
-    /**
-     * Creates a new Game with the given parameters.
-     * <p>
-     * Also initializes the board.
-     *
-     * @param rows          the number of rows the game's board is made of.
-     * @param columns       the number of columns the game's board is made of.
-     * @param numberOfBombs the number of bombs one the game's board.
-     */
-    public Game(int rows, int columns, int numberOfBombs) {
+    public Game() {
+        board = null;
+    }
+
+    public void init(int rows, int columns, int numberOfBombs) {
         this.board = new Board(rows, columns, numberOfBombs);
-        this.remainingBombs = numberOfBombs;
-        this.remainingTiles = rows * columns;
+        this.pointerCoordinates = new Coordinates(0, 0);
+
+        notifyObservers(new GameViewMessage(new GameView(this)));
     }
 
     /**
@@ -36,6 +35,40 @@ public class Game extends Observable {
     }
 
     /**
+     * Gets the coordinates of the pointer on the board.
+     *
+     * @return the pointer coordinates.
+     */
+    public Coordinates getPointerCoordinates() {
+        return this.pointerCoordinates;
+    }
+
+    /**
+     * Sets the pointer coordinates to the given ones.
+     *
+     * @param pointerCoordinates the pointer coordinates to be set.
+     */
+    public void setPointerCoordinates(Coordinates pointerCoordinates) {
+        this.pointerCoordinates = pointerCoordinates;
+    }
+
+    public void increaseRow() {
+        this.pointerCoordinates.increaseRow();
+    }
+
+    public void decreaseRow() {
+        this.pointerCoordinates.decreaseRow();
+    }
+
+    public void increaseColumn() {
+        this.pointerCoordinates.increaseColumn();
+    }
+
+    public void decreaseColumn() {
+        this.pointerCoordinates.decreaseColumn();
+    }
+
+    /**
      * Gets the number of remaining bombs on the board.
      * <p>
      * The flagged ones do not count as remaining.
@@ -44,6 +77,25 @@ public class Game extends Observable {
      */
     public int getRemainingBombs() {
         return remainingBombs;
+    }
+
+    /**
+     * Sets the number of remaining bombs to the given one.
+     *
+     * @param remainingBombs the number of remaining bombs to be set.
+     */
+    public void setRemainingBombs(int remainingBombs) {
+        this.remainingBombs = remainingBombs;
+    }
+
+    public void decreaseRemainingBombs() {
+        if (remainingBombs <= 0) return;
+        remainingBombs--;
+    }
+
+    public void increaseRemainingBombs() {
+        if (remainingBombs >= this.getBoard().getNumberOfBombs()) return;
+        remainingBombs++;
     }
 
     /**
@@ -70,6 +122,7 @@ public class Game extends Observable {
      * Decreases the number of remaining tile by one.
      */
     public void decreaseRemainingTiles() {
+        if (remainingTiles <= 0) return;
         remainingTiles--;
     }
 
@@ -83,6 +136,15 @@ public class Game extends Observable {
     }
 
     /**
+     * Sets the winning state to the given one.
+     *
+     * @param won the win state.
+     */
+    public void setWon(boolean won) {
+        this.won = won;
+    }
+
+    /**
      * Gets whether the player lost the game.
      *
      * @return true if the player lost the game.
@@ -92,11 +154,11 @@ public class Game extends Observable {
     }
 
     /**
-     * Gets the pointer coordinates.
+     * Sets the loosing state to the given one.
      *
-     * @return the pointer coordinates.
+     * @param lost the loose state.
      */
-    public Coordinates getCurrentPointerCoordinates() {
-        return currentPointerCoordinates;
+    public void setLost(boolean lost) {
+        this.lost = lost;
     }
 }

@@ -1,5 +1,7 @@
 package common;
 
+import common.message.Message;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -21,6 +23,8 @@ public abstract class Observable {
     }
 
     public void notifyObservers(Message message) {
+        if (message == null) return;
+
         for (Observer observer : observers) {
             observer.update(message);
         }
