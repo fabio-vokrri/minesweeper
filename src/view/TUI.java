@@ -9,11 +9,12 @@ import common.enums.Operation;
 import common.message.*;
 import model.GameView;
 
-import java.io.IOException;
+import java.util.Scanner;
 
 import static common.Constants.*;
 
 public class TUI extends Observable implements Observer {
+    private final Scanner scanner = new Scanner(System.in);
     private GameView gameView;
 
     public void run() {
@@ -23,7 +24,7 @@ public class TUI extends Observable implements Observer {
     }
 
     private void renderPreGame() {
-        Console.clear();
+        System.out.flush();
         renderTitle();
 
         int rows;
@@ -31,13 +32,10 @@ public class TUI extends Observable implements Observer {
             System.out.println("SELECT THE NUMBER OF ROWS");
             System.out.println("(" + minRows + "-" + maxRows + ")");
             try {
-                rows = Integer.parseInt(String.valueOf(System.in.read()));
+                rows = Integer.parseInt(scanner.next());
             } catch (NumberFormatException e) {
                 System.out.println("Please select a valid number of rows");
                 rows = -1;
-            } catch (IOException e) {
-                rows = -1;
-                System.exit(0);
             }
         } while (rows < minRows || rows > maxRows);
 
@@ -46,13 +44,10 @@ public class TUI extends Observable implements Observer {
             System.out.println("SELECT THE NUMBER OF COLUMNS");
             System.out.println("(" + minColumns + "-" + maxColumns + ")");
             try {
-                columns = Integer.parseInt(String.valueOf(System.in.read()));
+                columns = Integer.parseInt(scanner.next());
             } catch (NumberFormatException e) {
                 System.out.println("Please select a valid number of columns");
                 columns = -1;
-            } catch (IOException e) {
-                columns = -1;
-                System.exit(0);
             }
         } while (columns < minColumns || columns > maxColumns);
 
@@ -61,13 +56,10 @@ public class TUI extends Observable implements Observer {
             System.out.println("SELECT THE NUMBER OF BOMBS");
             System.out.println("(" + 1 + "-" + rows * columns + ")");
             try {
-                numberOfBombs = Integer.parseInt(String.valueOf(System.in.read()));
+                numberOfBombs = Integer.parseInt(scanner.next());
             } catch (NumberFormatException e) {
                 System.out.println("Please select a valid number of number of bombs");
                 numberOfBombs = -1;
-            } catch (IOException e) {
-                numberOfBombs = -1;
-                System.exit(0);
             }
         } while (numberOfBombs < 0 || numberOfBombs > rows * columns);
 
@@ -75,53 +67,66 @@ public class TUI extends Observable implements Observer {
     }
 
     private void renderInGame() {
-        renderGame();
-        renderRemainingBombs();
-        renderCommands();
-
         while (!gameView.isGameLost() && !gameView.isGameWon()) {
-            try {
-                String input = new String(System.in.readAllBytes());
-                if (directionKeys.contains(input)) {
-                    notifyObservers(new MoveMessage(Direction.fromKey(input)));
-                } else {
-                    notifyObservers(new OperationMessage(
-                            Operation.fromKey(input), gameView.getCurrentPointerCoordinates()
-                    ));
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            renderGame();
+            renderRemainingBombs();
+            renderCommands();
+            String input = scanner.next().toUpperCase();
+
+            if (directionKeys.contains(input)) {
+                notifyObservers(new MoveMessage(Direction.fromKey(input)));
+                continue;
+            }
+
+            if (operationKeys.contains(input)) {
+                notifyObservers(
+                        new OperationMessage(
+                                Operation.fromKey(input),
+                                gameView.getPointerCoordinates()
+                        )
+                );
             }
         }
     }
 
+    private void renderStatus() {
+        System.out.println("Lost? " + gameView.isGameLost());
+        System.out.println("Pointer row:\t\t" + gameView.getPointerCoordinates().getRow());
+        System.out.println("Pointer column:\t\t" + gameView.getPointerCoordinates().getColumn());
+    }
+
     private void renderPostGame() {
+        System.out.flush();
+        System.out.println(gameView.renderBombs());
+
         if (gameView.isGameLost()) System.out.println(Console.coloredString("YOU WON! :)", Color.GREEN));
         else System.out.println(Console.coloredString("YOU LOST! :(", Color.RED));
 
         System.out.println("q to quit");
 
-        char input;
-        do {
-            try {
-                input = (char) System.in.read();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        } while (input != 'q');
+        String input;
+        do input = scanner.next(); while (!input.equals("q"));
 
         System.exit(0);
     }
 
 
     private void renderTitle() {
-        System.out.println("""
-                   \
-                     __  __ ___ _  _ ___ _____      _____ ___ ___ ___ ___\s
-                    |  \\/  |_ _| \\| | __/ __\\ \\    / / __| __| _ \\ __| _ \\
-                    | |\\/| || || .` | _|\\__ \\\\ \\/\\/ /| _|| _||  _/ _||   /
-                    |_|  |_|___|_|\\_|___|___/ \\_/\\_/ |___|___|_| |___|_|_\\
-                """);
+        System.out.println(
+                """
+                                 _____                                                                         _____\s
+                                ( ___ )                                                                       ( ___ )
+                                 |   |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|   |\s
+                                 |   |   __  __ ___ _   _ _____ ______        _______ _____ ____  _____ ____   |   |\s
+                                 |   |  |  \\/  |_ _| \\ | | ____/ ___\\ \\      / / ____| ____|  _ \\| ____|  _ \\  |   |\s
+                                 |   |  | |\\/| || ||  \\| |  _| \\___ \\\\ \\ /\\ / /|  _| |  _| | |_) |  _| | |_) | |   |\s
+                                 |   |  | |  | || || |\\  | |___ ___) |\\ V  V / | |___| |___|  __/| |___|  _ <  |   |\s
+                                 |   |  |_|  |_|___|_| \\_|_____|____/  \\_/\\_/  |_____|_____|_|   |_____|_| \\_\\ |   |\s
+                                 |   |                                                                         |   |\s
+                                 |___|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|___|\s
+                                (_____)                                                                       (_____)\s
+                        """
+        );
     }
 
     private void renderRemainingBombs() {
@@ -129,13 +134,13 @@ public class TUI extends Observable implements Observer {
     }
 
     private void renderGame() {
-        Console.clear();
+        System.out.flush();
         System.out.println(gameView.render());
     }
 
     private void renderCommands() {
         for (Direction direction : Direction.values()) {
-            System.out.println(direction.name() + " >" + direction.getKey());
+            System.out.println(direction.name() + " > " + direction.getKey());
         }
 
         System.out.println("-".repeat(10));

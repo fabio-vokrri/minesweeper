@@ -6,9 +6,8 @@ import common.Coordinates;
  * Model class of a Tile.
  */
 public class Tile {
-
-    private final int x;
-    private final int y;
+    private final int row;
+    private final int column;
 
     private int adjacentBombs;
     private boolean hasBomb;
@@ -16,14 +15,14 @@ public class Tile {
     private boolean isFlagged;
 
     /**
-     * Creates a new tile with the given x and y coordinates.
+     * Creates a new tile with the given row and column coordinates.
      *
-     * @param x the tile's x coordinate.
-     * @param y the tile's y coordinate.
+     * @param row    the tile's row coordinate.
+     * @param column the tile's column coordinate.
      */
-    public Tile(int x, int y) {
-        this.x = x;
-        this.y = y;
+    public Tile(int row, int column) {
+        this.row = row;
+        this.column = column;
     }
 
     /**
@@ -32,26 +31,8 @@ public class Tile {
      * @param coordinates the tile's coordinates
      */
     public Tile(Coordinates coordinates) {
-        this.x = coordinates.getColumn();
-        this.y = coordinates.getRow();
-    }
-
-    /**
-     * Gets the x coordinate of this tile.
-     *
-     * @return the x coordinate.
-     */
-    public int getX() {
-        return x;
-    }
-
-    /**
-     * Gets the y coordinate of this tile.
-     *
-     * @return the y coordinate.
-     */
-    public int getY() {
-        return y;
+        this.row = coordinates.getColumn();
+        this.column = coordinates.getRow();
     }
 
     /**
@@ -120,5 +101,10 @@ public class Tile {
     public void toggleFlag() {
         if (this.isOpen) return;
         isFlagged = !isFlagged;
+    }
+
+    @Override
+    public String toString() {
+        return "{ " + row + ", " + column + " }" + "bomb? " + hasBomb;
     }
 }

@@ -49,7 +49,7 @@ public class Board {
         // calculates the number of adjacent bombs for every tile
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                int adjacentBombs = countAdjacentBombs(new Coordinates(i, j));
+                int adjacentBombs = countAdjacentBombs(i, j);
                 tiles[i][j].setAdjacentBombs(adjacentBombs);
             }
         }
@@ -70,6 +70,21 @@ public class Board {
         return tiles[coordinates.getColumn()][coordinates.getRow()];
     }
 
+
+    private int countAdjacentBombs(int row, int column) {
+        if (tiles[row][column].hasBomb()) return -1;
+        int count = 0;
+        for (int i = row - 1; i <= row + 1; i++) {
+            if (i < 0 || i >= rows) continue;
+            for (int j = column - 1; j <= column + 1; j++) {
+                if (j < 0 || j >= columns) continue;
+                if (tiles[i][j].hasBomb()) count++;
+            }
+        }
+
+        return count;
+    }
+
     /**
      * Counts the adjacent bombs for the given row and column.
      *
@@ -77,18 +92,7 @@ public class Board {
      * @return the number of adjacent bombs.
      */
     private int countAdjacentBombs(Coordinates coordinate) {
-        if (tiles[coordinate.getColumn()][coordinate.getRow()].hasBomb()) return -1;
-
-        int count = 0;
-        for (int i = coordinate.getColumn() - 1; i <= coordinate.getColumn() + 1; i++) {
-            if (i < 0 || i >= rows) continue;
-            for (int j = coordinate.getRow() - 1; j <= coordinate.getRow() + 1; j++) {
-                if (j < 0 || j >= columns) continue;
-                if (tiles[i][j].hasBomb()) count++;
-            }
-        }
-
-        return count;
+        return countAdjacentBombs(coordinate.getRow(), coordinate.getColumn());
     }
 
     /**
@@ -117,4 +121,6 @@ public class Board {
     public int getNumberOfBombs() {
         return this.numberOfBombs;
     }
+
+    
 }

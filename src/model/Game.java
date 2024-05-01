@@ -12,14 +12,16 @@ public class Game extends Observable {
 
     private boolean won;
     private boolean lost;
+
     private Coordinates pointerCoordinates;
 
     public Game() {
-        board = null;
+        this.board = null;
     }
 
     public void init(int rows, int columns, int numberOfBombs) {
         this.board = new Board(rows, columns, numberOfBombs);
+        this.remainingBombs = numberOfBombs;
         this.pointerCoordinates = new Coordinates(0, 0);
 
         notifyObservers(new GameViewMessage(new GameView(this)));
@@ -40,32 +42,23 @@ public class Game extends Observable {
      * @return the pointer coordinates.
      */
     public Coordinates getPointerCoordinates() {
-        return this.pointerCoordinates;
+        return pointerCoordinates;
     }
 
-    /**
-     * Sets the pointer coordinates to the given ones.
-     *
-     * @param pointerCoordinates the pointer coordinates to be set.
-     */
-    public void setPointerCoordinates(Coordinates pointerCoordinates) {
-        this.pointerCoordinates = pointerCoordinates;
+    public void increasePointerRow() {
+        pointerCoordinates.increaseRow();
     }
 
-    public void increaseRow() {
-        this.pointerCoordinates.increaseRow();
+    public void decreasePointerRow() {
+        pointerCoordinates.decreaseRow();
     }
 
-    public void decreaseRow() {
-        this.pointerCoordinates.decreaseRow();
+    public void increasePointerColumn() {
+        pointerCoordinates.increaseColumn();
     }
 
-    public void increaseColumn() {
-        this.pointerCoordinates.increaseColumn();
-    }
-
-    public void decreaseColumn() {
-        this.pointerCoordinates.decreaseColumn();
+    public void decreasePointerColumn() {
+        pointerCoordinates.decreaseColumn();
     }
 
     /**
@@ -77,15 +70,6 @@ public class Game extends Observable {
      */
     public int getRemainingBombs() {
         return remainingBombs;
-    }
-
-    /**
-     * Sets the number of remaining bombs to the given one.
-     *
-     * @param remainingBombs the number of remaining bombs to be set.
-     */
-    public void setRemainingBombs(int remainingBombs) {
-        this.remainingBombs = remainingBombs;
     }
 
     public void decreaseRemainingBombs() {
@@ -107,15 +91,6 @@ public class Game extends Observable {
      */
     public int getRemainingTiles() {
         return remainingTiles;
-    }
-
-    /**
-     * Sets the number of remaining tiles to the given one.
-     *
-     * @param remainingTiles the number of remaining tiles to be set.
-     */
-    public void setRemainingTiles(int remainingTiles) {
-        this.remainingTiles = remainingTiles;
     }
 
     /**

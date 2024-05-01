@@ -22,17 +22,18 @@ public class GameController implements Observer {
     }
 
     public void initGame(int rows, int columns, int numberOfBombs) {
-        this.game.init(rows, columns, numberOfBombs);
+        game.init(rows, columns, numberOfBombs);
     }
 
     private void handle(OperationMessage operationMessage) {
         Operation operation = operationMessage.getOperation();
         Coordinates coordinates = operationMessage.getCoordinates();
+
         switch (operation) {
             case OPEN -> {
-                openTileAt(coordinates);
-                this.game.setWon(this.checkIfWon());
-                this.game.setLost(this.checkIfLost());
+                game.setLost(this.checkIfLost());
+                game.setWon(this.checkIfWon());
+                this.openTileAt(coordinates);
             }
             case FLAG -> toggleFlagAt(coordinates);
         }
@@ -44,21 +45,23 @@ public class GameController implements Observer {
         switch (direction) {
             case UP -> {
                 if (game.getPointerCoordinates().getRow() == 0) return;
-                game.decreaseRow();
+                game.decreasePointerRow();
             }
             case DOWN -> {
                 if (game.getPointerCoordinates().getRow() >= game.getBoard().getNumberOfRows()) return;
-                game.increaseRow();
+                game.increasePointerRow();
             }
             case LEFT -> {
                 if (game.getPointerCoordinates().getColumn() == 0) return;
-                game.decreaseColumn();
+                game.decreasePointerColumn();
             }
             case RIGHT -> {
-                if (game.getPointerCoordinates().getRow() >= game.getBoard().getNumberOfColumns()) return;
-                game.increaseColumn();
+                if (game.getPointerCoordinates().getColumn() >= game.getBoard().getNumberOfColumns()) return;
+                game.increasePointerColumn();
             }
         }
+
+        System.out.println(game.getBoard().getTileAt(game.getPointerCoordinates()));
     }
 
     /**
@@ -68,8 +71,6 @@ public class GameController implements Observer {
      * @param column the column of the tile to open.
      */
     private void openTileAt(int row, int column) {
-        game.setPointerCoordinates(new Coordinates(row, column));
-
         // gets the tile at the given row and column.
         Tile tile = game.getBoard().getTileAt(row, column);
 
@@ -88,7 +89,6 @@ public class GameController implements Observer {
             if (i < 0 || i >= game.getBoard().getNumberOfRows()) continue;
             for (int j = column - 1; j <= column + 1; j++) {
                 if (j < 0 || j >= game.getBoard().getNumberOfColumns()) continue;
-
                 openTileAt(i, j);
             }
         }

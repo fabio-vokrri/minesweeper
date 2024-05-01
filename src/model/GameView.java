@@ -20,23 +20,11 @@ public class GameView extends Observable {
         return game.isWon();
     }
 
-    public int getRows() {
-        return game.getBoard().getNumberOfRows();
-    }
-
-    public int getColumns() {
-        return game.getBoard().getNumberOfColumns();
-    }
-
-    public int getNumberOfBombs() {
-        return game.getBoard().getNumberOfBombs();
-    }
-
     public int getNumberOfRemainingBombs() {
         return game.getRemainingBombs();
     }
 
-    public Coordinates getCurrentPointerCoordinates() {
+    public Coordinates getPointerCoordinates() {
         return game.getPointerCoordinates();
     }
 
@@ -45,7 +33,7 @@ public class GameView extends Observable {
 
         for (int i = 0; i < game.getBoard().getNumberOfRows(); i++) {
             for (int j = 0; j < game.getBoard().getNumberOfColumns(); j++) {
-                if (i == getCurrentPointerCoordinates().getColumn() && j == getCurrentPointerCoordinates().getRow()) {
+                if (i == getPointerCoordinates().getRow() && j == getPointerCoordinates().getColumn()) {
                     out.append(pointerSymbol);
                     continue;
                 }
