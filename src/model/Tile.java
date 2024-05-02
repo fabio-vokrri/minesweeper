@@ -1,7 +1,5 @@
 package model;
 
-import common.Coordinates;
-
 /**
  * Model class of a Tile.
  */
@@ -23,16 +21,6 @@ public class Tile {
     public Tile(int row, int column) {
         this.row = row;
         this.column = column;
-    }
-
-    /**
-     * Creates a new tile with the given coordinates.
-     *
-     * @param coordinates the tile's coordinates
-     */
-    public Tile(Coordinates coordinates) {
-        this.row = coordinates.getColumn();
-        this.column = coordinates.getRow();
     }
 
     /**
@@ -105,6 +93,6 @@ public class Tile {
 
     @Override
     public String toString() {
-        return "{ " + row + ", " + column + " }" + "bomb? " + hasBomb;
+        return "{ " + row + ", " + column + " }\n" + "bomb? " + hasBomb;
     }
 }

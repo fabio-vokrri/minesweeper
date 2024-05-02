@@ -10,6 +10,7 @@ public class Main {
 
         view.addObserver(controller);
         model.addObserver(view);
+
         view.run();
     }
 }

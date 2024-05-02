@@ -1,20 +1,22 @@
 package view;
 
-import common.Console;
 import common.Observable;
 import common.Observer;
 import common.enums.Color;
-import common.enums.Direction;
-import common.enums.Operation;
-import common.message.*;
-import model.GameView;
+import common.enums.Command;
+import common.message.CommandMessage;
+import common.message.GameView;
+import common.message.InitGame;
+import common.message.Message;
+import common.printable.Console;
+import model.Tile;
 
 import java.util.Scanner;
 
-import static common.Constants.*;
+import static common.printable.Constants.*;
 
 public class TUI extends Observable implements Observer {
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in).useDelimiter("\n");
     private GameView gameView;
 
     public void run() {
@@ -29,8 +31,7 @@ public class TUI extends Observable implements Observer {
 
         int rows;
         do {
-            System.out.println("SELECT THE NUMBER OF ROWS");
-            System.out.println("(" + minRows + "-" + maxRows + ")");
+            System.out.println("Select the number of rows (" + minRows + "-" + maxRows + "): ");
             try {
                 rows = Integer.parseInt(scanner.next());
             } catch (NumberFormatException e) {
@@ -41,8 +42,7 @@ public class TUI extends Observable implements Observer {
 
         int columns;
         do {
-            System.out.println("SELECT THE NUMBER OF COLUMNS");
-            System.out.println("(" + minColumns + "-" + maxColumns + ")");
+            System.out.println("Select the number of columns (" + minColumns + "-" + maxColumns + "): ");
             try {
                 columns = Integer.parseInt(scanner.next());
             } catch (NumberFormatException e) {
@@ -51,56 +51,76 @@ public class TUI extends Observable implements Observer {
             }
         } while (columns < minColumns || columns > maxColumns);
 
-        int numberOfBombs;
+        int numberOfBombs, maxNumberOfBombs;
         do {
-            System.out.println("SELECT THE NUMBER OF BOMBS");
-            System.out.println("(" + 1 + "-" + rows * columns + ")");
+            maxNumberOfBombs = (int) ((rows * columns) * 0.5f);
+            System.out.println("Select the number of bombs (" + 1 + "-" + maxNumberOfBombs + "): ");
             try {
                 numberOfBombs = Integer.parseInt(scanner.next());
             } catch (NumberFormatException e) {
                 System.out.println("Please select a valid number of number of bombs");
                 numberOfBombs = -1;
             }
-        } while (numberOfBombs < 0 || numberOfBombs > rows * columns);
+        } while (numberOfBombs < 0 || numberOfBombs >= maxNumberOfBombs);
 
-        notifyObservers(new InitGameMessage(rows, columns, numberOfBombs));
+        notifyObservers(new InitGame(rows, columns, numberOfBombs));
     }
 
     private void renderInGame() {
         while (!gameView.isGameLost() && !gameView.isGameWon()) {
-            renderGame();
-            renderRemainingBombs();
+            renderBoard();
             renderCommands();
-            String input = scanner.next().toUpperCase();
 
-            if (directionKeys.contains(input)) {
-                notifyObservers(new MoveMessage(Direction.fromKey(input)));
-                continue;
+            Command command = Command.NONE;
+            int parsedRow = -1, parsedColumn = -1;
+
+            boolean isValid = false;
+            while (!isValid) {
+                String input = scanner.next();
+
+                System.out.println(input);
+
+                String[] commandTokens = input.split("\\s+");
+
+                if (commandTokens.length < 3) {
+                    System.out.println("Please enter a valid command");
+                    continue;
+                }
+
+                command = Command.fromKey(commandTokens[0]);
+
+                try {
+                    parsedRow = Integer.parseInt(commandTokens[1]);
+                    if (parsedRow < 0 || parsedRow >= gameView.getNumberOfRows()) {
+                        throw new NumberFormatException();
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Please insert a valid row number between 0 and " + gameView.getNumberOfRows());
+                    continue;
+                }
+
+                try {
+                    parsedColumn = Integer.parseInt(commandTokens[2]);
+                    if (parsedColumn < 0 || parsedColumn >= gameView.getNumberOfRows()) {
+                        throw new NumberFormatException();
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Please insert a valid column number between 0 and " + gameView.getNumberOfColumns());
+                    continue;
+                }
+
+                isValid = true;
             }
 
-            if (operationKeys.contains(input)) {
-                notifyObservers(
-                        new OperationMessage(
-                                Operation.fromKey(input),
-                                gameView.getPointerCoordinates()
-                        )
-                );
-            }
+            notifyObservers(new CommandMessage(command, parsedRow, parsedColumn));
         }
     }
 
-    private void renderStatus() {
-        System.out.println("Lost? " + gameView.isGameLost());
-        System.out.println("Pointer row:\t\t" + gameView.getPointerCoordinates().getRow());
-        System.out.println("Pointer column:\t\t" + gameView.getPointerCoordinates().getColumn());
-    }
-
     private void renderPostGame() {
-        System.out.flush();
-        System.out.println(gameView.renderBombs());
+        renderBombs();
 
-        if (gameView.isGameLost()) System.out.println(Console.coloredString("YOU WON! :)", Color.GREEN));
-        else System.out.println(Console.coloredString("YOU LOST! :(", Color.RED));
+        if (gameView.isGameLost()) System.out.println(Console.coloredString("YOU LOST! :(", Color.RED));
+        else System.out.println(Console.coloredString("YOU WON!", Color.GREEN));
 
         System.out.println("q to quit");
 
@@ -112,52 +132,80 @@ public class TUI extends Observable implements Observer {
 
 
     private void renderTitle() {
-        System.out.println(
-                """
-                                 _____                                                                         _____\s
-                                ( ___ )                                                                       ( ___ )
-                                 |   |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|   |\s
-                                 |   |   __  __ ___ _   _ _____ ______        _______ _____ ____  _____ ____   |   |\s
-                                 |   |  |  \\/  |_ _| \\ | | ____/ ___\\ \\      / / ____| ____|  _ \\| ____|  _ \\  |   |\s
-                                 |   |  | |\\/| || ||  \\| |  _| \\___ \\\\ \\ /\\ / /|  _| |  _| | |_) |  _| | |_) | |   |\s
-                                 |   |  | |  | || || |\\  | |___ ___) |\\ V  V / | |___| |___|  __/| |___|  _ <  |   |\s
-                                 |   |  |_|  |_|___|_| \\_|_____|____/  \\_/\\_/  |_____|_____|_|   |_____|_| \\_\\ |   |\s
-                                 |   |                                                                         |   |\s
-                                 |___|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|___|\s
-                                (_____)                                                                       (_____)\s
-                        """
-        );
-    }
-
-    private void renderRemainingBombs() {
-        System.out.println("Remaining bombs: " + gameView.getNumberOfRemainingBombs() + "\n");
-    }
-
-    private void renderGame() {
-        System.out.flush();
-        System.out.println(gameView.render());
+        System.out.println(title);
     }
 
     private void renderCommands() {
-        for (Direction direction : Direction.values()) {
-            System.out.println(direction.name() + " > " + direction.getKey());
+        for (Command command : Command.values()) {
+            System.out.println(command.name() + " > " + command.getKey());
         }
 
-        System.out.println("-".repeat(10));
+        System.out.println("Enter a command: ");
+    }
 
-        for (Operation operation : Operation.values()) {
-            System.out.println(operation.name() + " > " + operation.getKey());
+    public void renderBoard() {
+        StringBuilder out = new StringBuilder();
+
+        out.append("   ");
+        for (int i = 0; i < gameView.getNumberOfColumns(); i++) {
+            out.append(i).append(" ");
         }
+
+        out.append("\n");
+
+        for (int i = 0; i < gameView.getNumberOfRows(); i++) {
+            if (i < 10) out.append(" ");
+            out.append(i).append(" ");
+
+            for (int j = 0; j < gameView.getNumberOfColumns(); j++) {
+
+                Tile currentTile = gameView.getTileAt(i, j);
+                if (!currentTile.isOpen()) {
+                    if (currentTile.isFlagged()) out.append(flagSymbol);
+                    else out.append(unopenedSymbol);
+                } else {
+                    if (currentTile.hasBomb()) out.append(bombSymbol);
+                    else {
+                        int adjacentBombs = currentTile.getAdjacentBombs();
+                        if (adjacentBombs != 0) out.append(adjacentBombs).append(" ");
+                        else out.append(square);
+                    }
+                }
+            }
+            out.append("\n");
+        }
+
+        System.out.flush();
+        System.out.print(out);
+    }
+
+    public void renderBombs() {
+        StringBuilder out = new StringBuilder();
+
+        for (int i = 0; i < gameView.getNumberOfRows(); i++) {
+            for (int j = 0; j < gameView.getNumberOfColumns(); j++) {
+                Tile tile = gameView.getTileAt(i, j);
+                if (tile.hasBomb()) {
+                    out.append(bombSymbol);
+                } else if (!tile.isOpen()) {
+                    out.append(unopenedSymbol);
+                } else {
+                    int adjacentBombs = tile.getAdjacentBombs();
+                    if (adjacentBombs != 0) out.append(adjacentBombs).append(" ");
+                    else out.append(square);
+                }
+            }
+            out.append("\n");
+        }
+
+        System.out.flush();
+        System.out.println(out);
     }
 
     @Override
     public void update(Message message) {
-        if (message instanceof GameViewMessage) {
-            this.gameView = ((GameViewMessage) message).getGameView();
+        if (message instanceof GameView gv) {
+            this.gameView = gv;
         }
-    }
-
-    private enum State {
-        PRE_GAME, IN_GAME, POST_GAME
     }
 }

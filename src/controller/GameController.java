@@ -2,11 +2,12 @@ package controller;
 
 import common.Coordinates;
 import common.Observer;
-import common.enums.Direction;
-import common.enums.Operation;
-import common.message.*;
+import common.enums.Command;
+import common.message.CommandMessage;
+import common.message.GameView;
+import common.message.InitGame;
+import common.message.Message;
 import model.Game;
-import model.GameView;
 import model.Tile;
 
 /**
@@ -16,6 +17,8 @@ import model.Tile;
  */
 public class GameController implements Observer {
     private final Game game;
+    private int selectedRow;
+    private int selectedColumn;
 
     public GameController(Game game) {
         this.game = game;
@@ -25,51 +28,24 @@ public class GameController implements Observer {
         game.init(rows, columns, numberOfBombs);
     }
 
-    private void handle(OperationMessage operationMessage) {
-        Operation operation = operationMessage.getOperation();
-        Coordinates coordinates = operationMessage.getCoordinates();
+    private void handle(CommandMessage commandMessage) {
+        Command command = commandMessage.getCommand();
 
-        switch (operation) {
+        selectedRow = commandMessage.getSelectedRow();
+        selectedColumn = commandMessage.getSelectColumn();
+
+        switch (command) {
             case OPEN -> {
                 game.setLost(this.checkIfLost());
                 game.setWon(this.checkIfWon());
-                this.openTileAt(coordinates);
+                this.openTileAt(selectedRow, selectedColumn);
             }
-            case FLAG -> toggleFlagAt(coordinates);
-        }
-    }
-
-    private void handle(MoveMessage moveMessage) {
-        Direction direction = moveMessage.getDirection();
-
-        switch (direction) {
-            case UP -> {
-                if (game.getPointerCoordinates().getRow() == 0) return;
-                game.decreasePointerRow();
-            }
-            case DOWN -> {
-                if (game.getPointerCoordinates().getRow() >= game.getBoard().getNumberOfRows()) return;
-                game.increasePointerRow();
-            }
-            case LEFT -> {
-                if (game.getPointerCoordinates().getColumn() == 0) return;
-                game.decreasePointerColumn();
-            }
-            case RIGHT -> {
-                if (game.getPointerCoordinates().getColumn() >= game.getBoard().getNumberOfColumns()) return;
-                game.increasePointerColumn();
-            }
+            case FLAG -> toggleFlagAt(selectedRow, selectedColumn);
+            case NONE -> System.out.println("Invalid operation! Please enter a valid command");
         }
 
-        System.out.println(game.getBoard().getTileAt(game.getPointerCoordinates()));
     }
 
-    /**
-     * Opens the tile at the given coordinates.
-     *
-     * @param row    the row of the tile to open.
-     * @param column the column of the tile to open.
-     */
     private void openTileAt(int row, int column) {
         // gets the tile at the given row and column.
         Tile tile = game.getBoard().getTileAt(row, column);
@@ -112,10 +88,6 @@ public class GameController implements Observer {
         else game.increaseRemainingBombs();
     }
 
-    private void toggleFlagAt(Coordinates coordinates) {
-        toggleFlagAt(coordinates.getRow(), coordinates.getColumn());
-    }
-
     /**
      * Checks whether the player won the game.
      *
@@ -131,23 +103,17 @@ public class GameController implements Observer {
      * @return true if the player lost.
      */
     private boolean checkIfLost() {
-        return game.getBoard().getTileAt(game.getPointerCoordinates()).hasBomb();
+        return game.getBoard().getTileAt(selectedRow, selectedColumn).hasBomb();
     }
 
     @Override
     public void update(Message message) {
-        if (message instanceof InitGameMessage m) {
+        if (message instanceof InitGame m) {
             initGame(m.getRows(), m.getColumns(), m.getNumberOfBombs());
+        } else if (message instanceof CommandMessage) {
+            handle((CommandMessage) message);
         }
 
-        if (message instanceof OperationMessage) {
-            handle((OperationMessage) message);
-        }
-
-        if (message instanceof MoveMessage) {
-            handle((MoveMessage) message);
-        }
-
-        this.game.notifyObservers(new GameViewMessage(new GameView(this.game)));
+        game.notifyObservers(new GameView(this.game));
     }
 }

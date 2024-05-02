@@ -4,8 +4,8 @@ package common;
  * A class representing a coordinate on the board.
  */
 public class Coordinates {
-    private int column;
-    private int row;
+    private final int column;
+    private final int row;
 
     /**
      * Creates a new coordinate with the given parameters.
@@ -34,21 +34,5 @@ public class Coordinates {
      */
     public int getRow() {
         return row;
-    }
-
-    public void increaseRow() {
-        this.row++;
-    }
-
-    public void decreaseRow() {
-        this.row--;
-    }
-
-    public void increaseColumn() {
-        this.column++;
-    }
-
-    public void decreaseColumn() {
-        this.column--;
     }
 }

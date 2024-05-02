@@ -9,26 +9,26 @@ import java.util.Random;
  */
 public class Board {
     private final Tile[][] tiles;
-    private final int rows;
-    private final int columns;
+    private final int numberOfRows;
+    private final int numberOfColumns;
     private final int numberOfBombs;
 
     /**
      * Creates a new Board with the given parameters.
      *
-     * @param rows          the number of rows the board is made of.
-     * @param columns       the number of columns the board is made of.
-     * @param numberOfBombs the number of bombs on the board.
+     * @param numberOfRows    the number of rows the board is made of.
+     * @param numberOfColumns the number of columns the board is made of.
+     * @param numberOfBombs   the number of bombs on the board.
      */
-    public Board(int rows, int columns, int numberOfBombs) {
-        this.rows = rows;
-        this.columns = columns;
-        this.tiles = new Tile[rows][columns];
+    public Board(int numberOfRows, int numberOfColumns, int numberOfBombs) {
+        this.numberOfRows = numberOfRows;
+        this.numberOfColumns = numberOfColumns;
+        this.tiles = new Tile[numberOfRows][numberOfColumns];
         this.numberOfBombs = numberOfBombs;
 
         // initializes the board with empty tiles.
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
+        for (int i = 0; i < numberOfRows; i++) {
+            for (int j = 0; j < numberOfColumns; j++) {
                 tiles[i][j] = new Tile(i, j);
             }
         }
@@ -39,16 +39,16 @@ public class Board {
             int randomRow, randomColumn;
 
             do {
-                randomRow = random.nextInt(rows);
-                randomColumn = random.nextInt(columns);
+                randomRow = random.nextInt(numberOfRows);
+                randomColumn = random.nextInt(numberOfColumns);
             } while (tiles[randomRow][randomColumn].hasBomb());
 
             tiles[randomRow][randomColumn].setBomb();
         }
 
         // calculates the number of adjacent bombs for every tile
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < columns; j++) {
+        for (int i = 0; i < numberOfRows; i++) {
+            for (int j = 0; j < numberOfColumns; j++) {
                 int adjacentBombs = countAdjacentBombs(i, j);
                 tiles[i][j].setAdjacentBombs(adjacentBombs);
             }
@@ -75,9 +75,9 @@ public class Board {
         if (tiles[row][column].hasBomb()) return -1;
         int count = 0;
         for (int i = row - 1; i <= row + 1; i++) {
-            if (i < 0 || i >= rows) continue;
+            if (i < 0 || i >= numberOfRows) continue;
             for (int j = column - 1; j <= column + 1; j++) {
-                if (j < 0 || j >= columns) continue;
+                if (j < 0 || j >= numberOfColumns) continue;
                 if (tiles[i][j].hasBomb()) count++;
             }
         }
@@ -86,22 +86,12 @@ public class Board {
     }
 
     /**
-     * Counts the adjacent bombs for the given row and column.
-     *
-     * @param coordinate the coordinate of the tile
-     * @return the number of adjacent bombs.
-     */
-    private int countAdjacentBombs(Coordinates coordinate) {
-        return countAdjacentBombs(coordinate.getRow(), coordinate.getColumn());
-    }
-
-    /**
      * Gets the number of rows the board is made of.
      *
      * @return the number of rows.
      */
     public int getNumberOfRows() {
-        return this.rows;
+        return this.numberOfRows;
     }
 
     /**
@@ -110,7 +100,7 @@ public class Board {
      * @return the number of columns.
      */
     public int getNumberOfColumns() {
-        return this.columns;
+        return this.numberOfColumns;
     }
 
     /**
@@ -121,6 +111,4 @@ public class Board {
     public int getNumberOfBombs() {
         return this.numberOfBombs;
     }
-
-    
 }
