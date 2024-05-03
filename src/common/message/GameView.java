@@ -30,8 +30,4 @@ public class GameView extends Observable implements Message {
     public boolean isGameWon() {
         return game.isWon();
     }
-
-    public int getNumberOfRemainingBombs() {
-        return game.getRemainingBombs();
-    }
 }

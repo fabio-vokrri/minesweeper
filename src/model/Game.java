@@ -20,6 +20,7 @@ public class Game extends Observable {
     public void init(int rows, int columns, int numberOfBombs) {
         this.board = new Board(rows, columns, numberOfBombs);
         this.remainingBombs = numberOfBombs;
+        this.remainingTiles = rows * columns;
 
         notifyObservers(new GameView(this));
     }

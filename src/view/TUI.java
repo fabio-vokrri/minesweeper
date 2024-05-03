@@ -1,7 +1,5 @@
 package view;
 
-import common.Observable;
-import common.Observer;
 import common.enums.Color;
 import common.enums.Command;
 import common.message.CommandMessage;
@@ -15,10 +13,17 @@ import java.util.Scanner;
 
 import static common.printable.Constants.*;
 
-public class TUI extends Observable implements Observer {
+/**
+ * Textual User Interface
+ */
+public class TUI extends View {
+    /**
+     * Input scanner
+     */
     private final Scanner scanner = new Scanner(System.in).useDelimiter("\n");
     private GameView gameView;
 
+    @Override
     public void run() {
         renderPreGame();
         renderInGame();
@@ -130,7 +135,6 @@ public class TUI extends Observable implements Observer {
         System.exit(0);
     }
 
-
     private void renderTitle() {
         System.out.println(title);
     }
@@ -148,7 +152,8 @@ public class TUI extends Observable implements Observer {
 
         out.append("   ");
         for (int i = 0; i < gameView.getNumberOfColumns(); i++) {
-            out.append(i).append(" ");
+            out.append(" ").append(i);
+            if (i < 10) out.append(" ");
         }
 
         out.append("\n");
@@ -158,7 +163,6 @@ public class TUI extends Observable implements Observer {
             out.append(i).append(" ");
 
             for (int j = 0; j < gameView.getNumberOfColumns(); j++) {
-
                 Tile currentTile = gameView.getTileAt(i, j);
                 if (!currentTile.isOpen()) {
                     if (currentTile.isFlagged()) out.append(flagSymbol);
@@ -167,13 +171,22 @@ public class TUI extends Observable implements Observer {
                     if (currentTile.hasBomb()) out.append(bombSymbol);
                     else {
                         int adjacentBombs = currentTile.getAdjacentBombs();
-                        if (adjacentBombs != 0) out.append(adjacentBombs).append(" ");
+                        if (adjacentBombs != 0) out.append(" ").append(adjacentBombs).append(" ");
                         else out.append(square);
                     }
                 }
             }
-            out.append("\n");
+
+            out.append(" ").append(i).append("\n");
         }
+
+        out.append("   ");
+        for (int i = 0; i < gameView.getNumberOfColumns(); i++) {
+            out.append(" ").append(i);
+            if (i < 10) out.append(" ");
+        }
+
+        out.append("\n");
 
         System.out.flush();
         System.out.print(out);
@@ -187,11 +200,9 @@ public class TUI extends Observable implements Observer {
                 Tile tile = gameView.getTileAt(i, j);
                 if (tile.hasBomb()) {
                     out.append(bombSymbol);
-                } else if (!tile.isOpen()) {
-                    out.append(unopenedSymbol);
                 } else {
                     int adjacentBombs = tile.getAdjacentBombs();
-                    if (adjacentBombs != 0) out.append(adjacentBombs).append(" ");
+                    if (adjacentBombs != 0) out.append(" ").append(adjacentBombs).append(" ");
                     else out.append(square);
                 }
             }

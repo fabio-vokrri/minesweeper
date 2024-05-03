@@ -12,8 +12,8 @@ public class Constants {
     public static final int minColumns = 5;
     public static final int maxColumns = 30;
 
-    public static final String square = "  ";
-    public static final String unopenedSymbol = Console.coloredString(square, Color.BLACK_BG);
+    public static final String square = "   ";
+    public static final String unopenedSymbol = Console.coloredString(square, Color.WHITE_BG);
     public static final String flagSymbol = Console.coloredString(square, Color.GREEN_BG);
     public static final String bombSymbol = Console.coloredString(square, Color.RED_BG);
 

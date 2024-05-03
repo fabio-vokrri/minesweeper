@@ -1,6 +1,5 @@
 package controller;
 
-import common.Coordinates;
 import common.Observer;
 import common.enums.Command;
 import common.message.CommandMessage;
@@ -36,9 +35,9 @@ public class GameController implements Observer {
 
         switch (command) {
             case OPEN -> {
+                openTileAt(selectedRow, selectedColumn);
                 game.setLost(this.checkIfLost());
                 game.setWon(this.checkIfWon());
-                this.openTileAt(selectedRow, selectedColumn);
             }
             case FLAG -> toggleFlagAt(selectedRow, selectedColumn);
             case NONE -> System.out.println("Invalid operation! Please enter a valid command");
@@ -70,16 +69,6 @@ public class GameController implements Observer {
         }
     }
 
-    public void openTileAt(Coordinates coordinates) {
-        openTileAt(coordinates.getRow(), coordinates.getColumn());
-    }
-
-    /**
-     * Toggles the flag of the tile at the given row and column.
-     *
-     * @param row    the row of the tile.
-     * @param column the column of the tile.
-     */
     private void toggleFlagAt(int row, int column) {
         Tile currentTile = game.getBoard().getTileAt(row, column);
         currentTile.toggleFlag();
@@ -88,20 +77,12 @@ public class GameController implements Observer {
         else game.increaseRemainingBombs();
     }
 
-    /**
-     * Checks whether the player won the game.
-     *
-     * @return true if the player won the game.
-     */
     private boolean checkIfWon() {
-        return this.game.getRemainingTiles() == game.getBoard().getNumberOfBombs();
+        System.out.println("tiles: " + game.getRemainingTiles());
+        System.out.println("bombs: " + game.getBoard().getNumberOfBombs());
+        return game.getRemainingTiles() == game.getBoard().getNumberOfBombs();
     }
 
-    /**
-     * Checks whether the player lost the game.
-     *
-     * @return true if the player lost.
-     */
     private boolean checkIfLost() {
         return game.getBoard().getTileAt(selectedRow, selectedColumn).hasBomb();
     }

@@ -1,10 +1,11 @@
 import controller.GameController;
 import model.Game;
-import view.TUI;
+import view.GUI;
+import view.View;
 
 public class Main {
     public static void main(String[] args) {
-        TUI view = new TUI();
+        View view = new GUI();
         Game model = new Game();
         GameController controller = new GameController(model);
 
